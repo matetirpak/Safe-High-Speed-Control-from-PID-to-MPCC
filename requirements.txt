@@ -1,0 +1,15 @@
+# Python deps for the uv venv (.venv). Install with:
+#   uv pip install --python .venv/bin/python -r requirements.txt
+# The Carla 0.9.16 wheel is installed separately from the CARLA distribution
+# (see README): $CARLA_ROOT/PythonAPI/carla/dist/carla-0.9.16-cp310-...whl
+numpy==2.2.6
+pyyaml==6.0.3
+networkx==3.4.2        # CARLA GlobalRoutePlanner (route generation)
+# --- MPC (CasADi + acados) ---
+casadi==3.7.0          # symbolic OCP + autodiff (acados master needs >=3.7)
+scipy==1.15.3          # block_diag for cost weights (+ misc)
+opencv-python-headless==4.13.0.92   # camera predicted-path overlay (numpy-2 compatible)
+matplotlib==3.10.9     # run/benchmark plots + imported by acados_template on load (numpy-2 build; avoids numpy-1 system-matplotlib ABI crash)
+# acados_template is installed editable from the acados source build, NOT pip:
+#   uv pip install --python .venv/bin/python -e $ACADOS_SOURCE_DIR/interfaces/acados_template
+# (build acados first; see README install section / docs/mpc.md / setup_env.sh)

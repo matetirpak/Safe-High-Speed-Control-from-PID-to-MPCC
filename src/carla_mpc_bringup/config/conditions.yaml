@@ -1,0 +1,114 @@
+# ============================================================================
+#  Named environmental CONDITIONS (weather + time-of-day) for reproducible runs.
+# ============================================================================
+#  Each entry is an explicit set of carla.WeatherParameters fields (not just a
+#  preset enum name), so a named condition reproduces exactly. Selected by the
+#  launch flag:
+#    ros2 launch carla_mpc_bringup carla_pid.launch.py condition:=fog_noon
+#
+#  Field cheat-sheet (all 0-100 unless noted):
+#    cloudiness, precipitation, precipitation_deposits (puddles), wetness,
+#    wind_intensity, fog_density, fog_distance (m; smaller = denser visible fog),
+#    fog_falloff (0.1-2), sun_altitude_angle (deg; <0 = night), sun_azimuth_angle.
+# ============================================================================
+
+conditions:
+  - name: clear_noon
+    label: "Clear Noon"
+    cloudiness: 5
+    precipitation: 0
+    precipitation_deposits: 0
+    wetness: 0
+    wind_intensity: 5
+    fog_density: 2
+    fog_distance: 60
+    sun_altitude_angle: 75
+    sun_azimuth_angle: 90
+
+  - name: cloudy_noon
+    label: "Cloudy Noon"
+    cloudiness: 80
+    precipitation: 0
+    precipitation_deposits: 0
+    wetness: 0
+    wind_intensity: 10
+    fog_density: 5
+    fog_distance: 50
+    sun_altitude_angle: 75
+
+  - name: wet_noon
+    label: "Wet Noon"
+    cloudiness: 40
+    precipitation: 0
+    precipitation_deposits: 60
+    wetness: 60
+    wind_intensity: 10
+    sun_altitude_angle: 75
+
+  - name: soft_rain_noon
+    label: "Soft Rain Noon"
+    cloudiness: 60
+    precipitation: 30
+    precipitation_deposits: 40
+    wetness: 40
+    wind_intensity: 20
+    fog_density: 5
+    sun_altitude_angle: 70
+
+  - name: hard_rain_noon
+    label: "Hard Rain Noon"
+    cloudiness: 90
+    precipitation: 90
+    precipitation_deposits: 90
+    wetness: 90
+    wind_intensity: 60
+    fog_density: 7
+    fog_distance: 40
+    sun_altitude_angle: 65
+
+  - name: fog_noon
+    label: "Fog Noon"
+    cloudiness: 50
+    fog_density: 70
+    fog_distance: 12
+    fog_falloff: 1.0
+    wetness: 10
+    sun_altitude_angle: 60
+
+  - name: clear_sunset
+    label: "Clear Sunset"
+    cloudiness: 10
+    precipitation: 0
+    wetness: 0
+    wind_intensity: 5
+    fog_density: 3
+    sun_altitude_angle: 8
+    sun_azimuth_angle: 250
+
+  - name: clear_night
+    label: "Clear Night"
+    cloudiness: 10
+    precipitation: 0
+    wetness: 0
+    fog_density: 3
+    sun_altitude_angle: -80
+
+  - name: foggy_night
+    label: "Foggy Night"
+    cloudiness: 60
+    fog_density: 75
+    fog_distance: 10
+    fog_falloff: 1.0
+    wetness: 10
+    sun_altitude_angle: -80
+
+  - name: rainy_night
+    label: "Rainy Night"
+    cloudiness: 90
+    precipitation: 80
+    precipitation_deposits: 80
+    wetness: 80
+    wind_intensity: 50
+    fog_density: 10
+    fog_distance: 30
+    sun_altitude_angle: -80

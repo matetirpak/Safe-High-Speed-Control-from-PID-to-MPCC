@@ -1,0 +1,54 @@
+# ============================================================================
+#  Scenario suite for the pid / mpc / mpcc benchmark.
+#  Run:  ros2 run carla_mpc_bringup run_benchmark \
+#            --scenarios src/carla_mpc_bringup/config/scenarios.yaml \
+#            --controllers pid,mpc,mpcc --repeats 3
+#
+#  GROUPS: every top-level list below is a scenario GROUP, named by its key. The
+#  report aggregates each group SEPARATELY (its own Metrics + Speed tables, titled
+#  with the list name), so different operating regimes aren't pooled into one number.
+#  Pair groups with capped controller VARIANTS (e.g. --controllers mpcc,mpcc@100):
+#  the speed cap is a report column, the route regime is a group.
+#
+#  Each scenario is ONE deterministic, reproducible drive:
+#    name   -> tags the run (--condition); the report breaks down per-scenario by it
+#    map    -> CARLA town (installed: Town01-07, Town10HD, Town11/12/13/15)
+#    route  -> explicit-waypoint XML in config/routes/, built with route_lab from atlas
+#              spawn-point numbers (the GRP fills lanes between points). The route defines
+#              the drive length, so routed scenarios need no `distance`.
+#
+#  Build a route:   ros2 run carla_mpc_bringup route_lab --town <Town> --spawns "i,j,k" --save <name>
+#  Verify a route:  ros2 run carla_mpc_bringup route_lab --route routes/<name>.xml   (-> logs/route_lab/)
+#  `repeats` (CLI) gives multi-sample stats.
+# ============================================================================
+
+# Flat 2D routes (no elevation).
+flat_2d:
+  - name: sharp_turns
+    map: Town07
+    route: routes/sharp_turns.xml
+
+  - name: highway_speed
+    map: Town04
+    route: routes/highway_speed.xml
+
+  - name: highway_lane_changes
+    map: Town06
+    route: routes/highway_lane_changes.xml
+
+  - name: roundabout
+    map: Town03
+    route: routes/roundabout.xml
+
+# Elevated 3D routes -- Town11 hill drives (Need 16 GB VRAM)
+elevated_3d:
+  - name: country_road
+    map: Town11
+    route: routes/country_road.xml
+
+  #- name: rural_10k
+  #  map: Town11
+  #  route: routes/rural_10k.xml   # ~10 km Town11 SE rural drive
+  - name: curvy_downhill
+    map: Town11
+    route: routes/curvy_downhill.xml   # last ~3 km of rural_10k

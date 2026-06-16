@@ -1,0 +1,61 @@
+# ============================================================================
+#  Ego vehicle + sensor suite for the high-speed control testbed.
+# ============================================================================
+#
+#  Read by control_node (builds the rig). A LEAN rig by
+#  design: control needs a driver-view camera plus collision/lane-invasion events,
+#  not a full perception suite -- cameras are the real-time cost, so keep them
+#  minimal when pushing high-speed control.
+#
+#  Conventions:
+#  * `mount` is the sensor pose RELATIVE TO THE VEHICLE ORIGIN in ROS body
+#    convention (REP-103): X forward, Y left, Z up. Metres; rotation in DEGREES.
+#    The code converts to Carla's left-handed frame at spawn time.
+#  * `type` maps to a Carla blueprint as `sensor.<type>`.
+#  * `enabled: false` keeps a sensor defined but unspawned.
+#  * Topic path is /carla/<vehicle.ros_name>/<sensor.name>/<channel>.
+# ============================================================================
+
+vehicle:
+  # Tesla Model 3 -- light, fast, the reference vehicle for high-speed tracking.
+  blueprint: vehicle.tesla.model3
+  # MUST be "hero": Carla 0.9.16's native ROS2 publisher only fills the vehicle
+  # segment of attached-sensor topics for the ego named "hero" (carla#9278).
+  role_name: hero
+  ros_name: hero
+  base_frame: base_link
+
+defaults:
+  frame_prefix: ""
+
+sensors:
+  # ----------------------------------------------------------------------
+  #  Front camera -- the driver view (Foxglove Image panel). 20 Hz.
+  # ----------------------------------------------------------------------
+  - name: cam_front
+    type: camera.rgb
+    enabled: true
+    ros: true
+    mount: {x: 1.2, y: 0.0, z: 1.5, roll: 0.0, pitch: 0.0, yaw: 0.0}
+    attributes:
+      image_size_x: 960
+      image_size_y: 540
+      fov: 90.0
+      sensor_tick: 0.05                       # 20 Hz
+      enable_postprocess_effects: true
+
+  # ----------------------------------------------------------------------
+  #  Collision + lane-invasion -- crash + lane-departure events for a path
+  #  tracker. Published but mountless. Highly relevant for control QA.
+  # ----------------------------------------------------------------------
+  - name: collision
+    type: other.collision
+    enabled: true
+    ros: true
+    mount: {x: 0.0, y: 0.0, z: 0.0}
+
+  - name: lane_invasion
+    type: other.lane_invasion
+    enabled: true
+    ros: true
+    mount: {x: 0.0, y: 0.0, z: 0.0}

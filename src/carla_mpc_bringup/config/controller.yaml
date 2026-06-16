@@ -1,0 +1,173 @@
+# ============================================================================
+#  Controller parameters (read by control_node -> ControllerConfig).
+# ============================================================================
+#  The PID gains are coupled to the world tick dt (carla.yaml fixed_delta_seconds)
+#  through the integral/derivative terms -- retune if you change the tick rate.
+
+pid:
+  # --- Longitudinal speed PID (output: throttle/brake in [-1, 1]) -------------
+  long_kp: 0.10
+  long_ki: 0.15
+  long_kd: 0.25
+  # --- Lateral heading PID (output: steer in [-1, 1]) -------------------------
+  lat_kp: 1.20
+  lat_ki: 0.00
+  lat_kd: 0.10
+
+  max_throttle: 1.0
+  max_brake: 1.0
+  max_steer: 1.0
+
+  # --- Curvature-aware speed policy -------------------------------------------
+  #  Scan the route ahead over a speed-dependent look-ahead, find the sharpest
+  #  upcoming turn, and slow down ahead of it with a braking-distance margin.
+  default_target_speed_kmh: 120.0    # cruise speed on straights
+  min_speed_kmh: 10.0                # floor in the sharpest curves
+  no_slowdown_below_deg: 15.0        # ignore curves gentler than this
+  max_turn_angle_deg: 90.0           # angle mapped to min_speed
+  angle_sliding_window_n: 10         # smoothing window on the detected curve angle
+  angle_to_speed_exponent: 1.4       # >1 = brake harder for sharp curves
+  curve_safety_margin_m: 20.0        # extra braking distance before a curve
+  decel_ms2: 3.0                     # assumed comfortable deceleration
+  long_lookahead_sec: 3.0            # speed-policy look-ahead horizon (s)
+  min_long_lookahead_dist: 20.0      # ... floored at this distance (m)
+  lat_lookahead_sec: 0.5             # steering target look-ahead (s)
+
+  # --- Curve-speed velocity profile (forward-backward, curvature-based). When
+  #     a_lat_max > 0 it sets the curve speed and replaces the angle-ahead heuristic
+  #     above; 0 = use the heuristic.
+  a_lat_max: 7.0                     # lateral-accel cap for the curve speed (m/s^2)
+  curve_speed_factor: 0.85           # fraction of the lateral limit to target (margin)
+  a_accel: 3.0                       # forward-pass acceleration bound for the profile (m/s^2)
+
+  # --- High-steer spin-out guard ----------------------------------------------
+  high_steer_threshold: 0.2          # |steer| above this caps throttle...
+  high_steer_throttle_cap: 0.3       # ...to this, so the car doesn't spin exiting curves
+
+  # --- Actuation smoothing: exponentially-weighted average of the last N commands
+  #     (throttle/brake/steer). smoothed = sum(decay^i*u[k-i]) / sum(decay^i), newest
+  #     = most weight. n <= 1 = off; higher decay = smoother + more lag. Inherited by
+  #     pidpp. Retune n with the tick rate.
+  cmd_smooth_n: 8
+  cmd_smooth_decay: 0.6
+
+# ============================================================================
+#  PID++ (controller:=pidpp) -- the baseline PID plus two add-ons:
+#    (1) lateral CURVATURE FEEDFORWARD: delta_ff = lat_kff*atan(L*kappa), so the PID
+#        only trims the residual instead of carrying a standing cross-track error;
+#    (2) STEER-RATE LIMIT: the base PID bypasses CARLA's slew limit, re-added here.
+#  Inherits all pid: values above; only the add-ons below are set.
+# ============================================================================
+pidpp:
+  lat_kff: 0.9                       # curvature feed-forward gain
+  steer_rate_max: 2.0               # steer-rate limit (normalized steer/s)
+  stanley_k_e: 0.0                   # Stanley cross-track gain (0 = off; the look-ahead term already corrects cross-track)
+  stanley_k_soft: 1.0               # low-speed softening (m/s) so the Stanley atan stays bounded near v=0
+  d_filter_alpha: 0.7               # longitudinal derivative low-pass (0 = off)
+  long_d_max: 0.6                   # clamp on the longitudinal D term
+  long_kff: 0.60                    # longitudinal feed-forward of d(target)/tick (brake on a dropping target, throttle on rising)
+  # Longitudinal curve-speed velocity profile (replaces the heuristic):
+  a_lat_max: 14.0                   # lateral-accel limit setting the curve speed (m/s^2)
+  curve_speed_factor: 0.85          # fraction of the lateral limit to target (margin)
+  a_accel: 5.0                      # forward-pass acceleration bound (m/s^2)
+
+# ============================================================================
+#  MPC (controller:=mpc) -- bicycle tracking OCP solved by acados SQP-RTI.
+#  See docs/mpc.md and docs/dynamics.md.
+# ============================================================================
+mpc:
+  # dyn = dynamic bicycle (models tyre slip; default). kin_cg / kin_rear are
+  # kinematic; blended is dynamic with a low-speed kinematic blend.
+  model: dyn                         # dyn | kin_cg | kin_rear | blended
+  N: 50                              # horizon steps
+  dt: 0.06                           # horizon step (s) -> 3.0 s lookahead
+
+  # Dynamic-bicycle tyre/inertia (Model-3 estimates; identify from CARLA for fidelity).
+  Cf: 120000.0                       # front cornering stiffness (N/rad)
+  Cr: 150000.0                       # rear cornering stiffness (N/rad)
+  Iz: 3745.0                         # yaw inertia (kg m^2)
+  vx_min: 1.0                        # vx floor (dyn model singular at vx=0)
+  vy_max: 12.0                       # |lateral velocity| bound (m/s)
+  r_max: 2.0                         # |yaw rate| bound (rad/s)
+
+  # Cost weights (contouring decomposition of the position error; see docs/mpc.md).
+  q_lat: 20.0                        # cross-track (stay on path) -- weighted high
+  q_lon: 1.0                         # along-track (pacing) -- low so the MPC isn't rigidly paced
+  q_psi: 8.0                         # heading error
+  q_v: 4.0                           # speed error
+  r_a: 0.3                           # accel input
+  r_delta: 4.0                       # steer input (magnitude)
+  r_ddelta: 30.0                     # steer-change penalty (damps micro left/right chatter)
+  q_terminal_scale: 5.0              # terminal state cost = scale x stage state cost
+
+  # Input bounds.
+  a_max: 6.0                         # m/s^2
+  a_min: -7.0                        # m/s^2
+  delta_max: 0.7                     # rad (~40 deg); 0 = use the vehicle's physical max steer
+  steer_rate_max: 10.0               # rad/s; post-solve rate-limit on the commanded steer
+  rti_iters: 3                       # SQP-RTI iterations per solve
+
+  # Curve speed is set by the lateral-grip budget a_lat_max (v_curve =
+  # curve_speed_factor * sqrt(a_lat_max / curvature)), capped at the straight cruise. a_lat is also a
+  # soft OCP constraint as a transient safety cap.
+  target_speed_kmh: 150.0            # cruise cap on straights
+  a_lat_max: 13.0                    # lateral-grip budget (m/s^2)
+  curve_speed_factor: 0.85           # fraction of the grip budget to target (margin)
+  reference_smooth_m: 2.5            # path xy smoothing (eases implicit lane changes)
+  lane_change_smooth_m: 6.0          # extra smoothing on lane-change arcs
+  a_lat_slack: 100.0                 # soft-constraint penalty on the transient a_lat cap
+  v_min: 3.0                         # speed floor (m/s)
+  a_long_acc: 6.0                    # forward accel shaping the reachable reference pace
+  a_long_dec: 7.0                    # braking shaping the reference pace (pre-brake before curves)
+
+  # Analytic actuation map (a -> throttle/brake).
+  a_max_throttle: 6.0
+  a_max_brake: 8.0
+  v_max: 60.0
+
+# ============================================================================
+#  MPCC (controller:=mpcc) -- Model Predictive Contouring Control. A blended
+#  kinematic/dynamic bicycle (kinematic below v_blend) plus a path-progress state
+#  theta; maximises progress (contouring keeps it on the path) with a per-stage
+#  v_theta target = the friction-limited curve speed.
+#  See docs/mpc.md and docs/dynamics.md.
+# ============================================================================
+mpcc:
+  N: 50                              # horizon steps
+  dt: 0.05                           # horizon step (s) -> 2.5 s lookahead
+  Cf: 120000.0                       # dynamic-bicycle tyre/inertia (= the dyn MPC)
+  Cr: 150000.0
+  Iz: 3745.0
+  vx_min: 1.0                        # state bounds (keep the linear-tyre QP conditioned)
+  vy_max: 12.0
+  r_max: 2.0
+  q_c: 20.0                          # contouring (cross-track) weight -- keep on the path
+  q_l: 2.0                           # lag weight (theta <-> real arc length)
+  r_a: 0.3                           # accel input
+  r_delta: 4.0                       # steer input (magnitude)
+  r_ddelta: 65.0                     # steer-change penalty (the main anti-wobble knob)
+  q_vtheta: 4.0                      # track the progress-speed target
+  q_vx: 4.0                          # track the actual-speed target
+  a_max: 6.0
+  a_min: -7.0
+  delta_max: 0.7
+  v_theta_max: 60.0                  # progress-rate bound (m/s)
+  steer_rate_max: 10.0               # rad/s; post-solve rate-limit on the commanded steer
+  cmd_smooth_n: 4                    # actuation smoothing window (shallow; MPCC is already smooth)
+  cmd_smooth_decay: 0.4
+  rti_iters: 3
+  a_grip: 16.0                       # friction-circle radius (m/s^2), soft safety backstop (> a_lat_max)
+  grip_slack: 100.0
+  # v_theta target = curve_speed_factor * sqrt(a_lat_max/|kappa|), capped at target_speed_kmh.
+  target_speed_kmh: 180.0            # cruise cap on straights
+  a_lat_max: 15.0                    # lateral-grip budget (m/s^2)
+  curve_speed_factor: 0.90           # fraction of the grip budget to target (margin); do not set to 1.0 (overshoot)
+  reference_smooth_m: 2.5            # path xy smoothing (eases implicit lane changes)
+  lane_change_smooth_m: 6.0          # extra smoothing on lane-change arcs
+  v_min: 3.0
+  a_long_acc: 6.0
+  a_long_dec: 7.0                    # braking shaping the reference pace (margin below a_max_brake)
+  v_max: 60.0
+  a_max_throttle: 6.0
+  a_max_brake: 8.0
+  v_blend: 4.0                       # kinematic<->dynamic blend speed (low-speed launch stability)

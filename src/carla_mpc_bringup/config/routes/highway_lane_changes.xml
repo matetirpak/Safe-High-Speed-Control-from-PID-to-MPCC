@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- highway_lane_changes: Town06 spawn-point indices (in order): 395,362,410,45,188,349,309,344
+     EDIT BY THESE NUMBERS (atlas spawn indices), not the raw coords below. GRP-traced.
+     Wire with:  route: routes/highway_lane_changes.xml  in config/scenarios.yaml -->
+<routes>
+    <route id="highway_lane_changes" town="Town06">
+        <weathers>
+            <weather route_percentage="0" cloudiness="10" sun_altitude_angle="60"/>
+        </weathers>
+        <waypoints>
+            <position x="12.001884" y="227.405716" z="0.300000"/>  <!-- spawn 395 -->
+            <position x="93.267799" y="131.879639" z="0.300000"/>  <!-- spawn 362 -->
+            <position x="504.310394" y="31.871843" z="0.300000"/>  <!-- spawn 410 -->
+            <position x="368.141327" y="-24.277822" z="0.300000"/>  <!-- spawn 45 -->
+            <position x="51.165482" y="-12.623243" z="0.300000"/>  <!-- spawn 188 -->
+            <position x="-143.908371" y="-2.451177" z="0.300000"/>  <!-- spawn 349 -->
+            <position x="-12.519525" y="110.310127" z="0.300000"/>  <!-- spawn 309 -->
+            <position x="-216.407669" y="145.632263" z="0.300000"/>  <!-- spawn 344 -->
+        </waypoints>
+        <scenarios/>
+    </route>
+</routes>

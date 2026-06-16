@@ -1,0 +1,49 @@
+# ============================================================================
+#  Carla server / world settings for the high-speed control testbed.
+# ============================================================================
+#  Read by control_node. Synchronous fixed-step mode is mandatory: in sync mode
+#  each command is computed from the post-tick state and applied via apply_control,
+#  taking effect on the next world.tick() -- so control is deterministic and
+#  race-free. The control loop runs at the tick rate.
+
+client:
+  host: localhost
+  port: 2000
+  timeout: 20.0
+
+world:
+  map: Town05                       # Overridden by a file route's town.
+  synchronous_mode: true
+  fixed_delta_seconds: 0.05         # 20 Hz tick = control rate. 0.02 (50 Hz) is
+                                    # smoother at high speed but heavier with cameras;
+                                    # PID gains in controller.yaml are dt-coupled.
+  realtime_factor: 1.0              # cap sim to this x real-time (0 = uncapped).
+
+# Route the CONTROLLER tracks.
+#   mode: random -> GlobalRoutePlanner traces lane-level routes to random goals,
+#                   regenerated on arrival (continuous town driving).
+#   mode: file   -> a fixed CARLA Leaderboard route XML (reproducible benchmarking).
+route:
+  mode: random                      # random | file
+  loop: true                        # random: keep drawing new goals; file: restart on arrival
+  resolution: 2.0                   # GlobalRoutePlanner sampling resolution (m between waypoints)
+  target_speed_kmh: 0               # 0 = use the controller's curvature-aware speed policy;
+                                    # >0 = constant cruise speed (overrides the policy)
+  file: ""                          # used when mode==file, e.g. routes/highway_speed.xml
+  id: ""                            # route id within the file ("" = first)
+
+weather:
+  preset: ClearNoon                 # a Carla preset, or a named condition from conditions.yaml
+
+# Keep traffic disabled
+traffic:
+  autopilot: false
+  number_of_vehicles: 0
+  number_of_walkers: 0
+  ignore_lights: true
+  ignore_signs: true
+
+spawn:
+  seed: 42                          # route RNG
+  spawn_index: 0                    # map spawn-point index (random mode start)
+  warmup_seconds: 3.0               # brake-hold at spawn: lets the drop settle AND Foxglove boot before driving

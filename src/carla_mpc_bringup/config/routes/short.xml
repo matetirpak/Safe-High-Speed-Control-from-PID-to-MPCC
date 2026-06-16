@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- sharp_turns: Town07 spawn-point indices (in order): 90,115,43,100,24,73,98,105,8,7,69,112,69
+     EDIT BY THESE NUMBERS (atlas spawn indices), not the raw coords below. GRP-traced.
+     Wire with:  route: routes/sharp_turns.xml  in config/scenarios.yaml -->
+<routes>
+    <route id="sharp_turns" town="Town07">
+        <weathers>
+            <weather route_percentage="0" cloudiness="10" sun_altitude_angle="60"/>
+        </weathers>
+        <waypoints>
+            <position x="-74.743652" y="-142.242355" z="0.700000"/>  <!-- spawn 112 -->
+            <position x="-31.429941" y="-108.991562" z="0.300000"/>  <!-- spawn 69 -->
+        </waypoints>
+        <scenarios/>
+    </route>
+</routes>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- highway_speed: Town04 spawn-point indices (in order): 232,20,56,337,296,306,268,162
+     EDIT BY THESE NUMBERS (atlas spawn indices), not the raw coords below. GRP-traced.
+     Wire with:  route: routes/highway_speed.xml  in config/scenarios.yaml -->
+<routes>
+    <route id="highway_speed" town="Town04">
+        <weathers>
+            <weather route_percentage="0" cloudiness="10" sun_altitude_angle="60"/>
+        </weathers>
+        <waypoints>
+            <position x="205.488586" y="-317.736755" z="0.481942"/>  <!-- spawn 232 -->
+            <position x="393.098114" y="-228.087570" z="0.300000"/>  <!-- spawn 20 -->
+            <position x="86.762085" y="6.435072" z="11.192306"/>  <!-- spawn 56 -->
+            <position x="-99.570290" y="-3.670201" z="9.771310"/>  <!-- spawn 337 -->
+            <position x="-4.947597" y="126.296463" z="0.300000"/>  <!-- spawn 296 -->
+            <position x="107.804474" y="47.712959" z="11.192306"/>  <!-- spawn 306 -->
+            <position x="15.111462" y="-83.347870" z="0.300000"/>  <!-- spawn 268 -->
+            <position x="83.191475" y="-170.189194" z="0.600000"/>  <!-- spawn 162 -->
+        </waypoints>
+        <scenarios/>
+    </route>
+</routes>

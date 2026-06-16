@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>carla_mpc_bringup</name>
+  <version>0.1.0</version>
+  <description>
+    Carla 0.9.16 + ROS2 Humble testbed for high-speed trajectory tracking with
+    PID, PID++, MPC, and MPCC controllers. Spawns a configurable ego via Carla's native ROS2
+    publisher, drives it along generated routes with a swappable controller, and
+    exposes a detailed control dashboard for Foxglove.
+  </description>
+  <maintainer email="mate.tirpak@gmail.com">mate</maintainer>
+  <license>MIT</license>
+
+  <!-- Carla wheel + the CARLA PythonAPI `agents` package are external (venv +
+       PYTHONPATH via setup_env.sh); see README. -->
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>nav_msgs</exec_depend>
+  <exec_depend>visualization_msgs</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>tf2_ros</exec_depend>
+  <!-- /clock message type: recorded into bags by record_run and consumed by use_sim_time nodes; published by CARLA's native ROS2 bridge, not this package. -->
+  <exec_depend>rosgraph_msgs</exec_depend>
+  <exec_depend>rosbag2_py</exec_depend>
+  <exec_depend>ros2bag</exec_depend>
+
+  <exec_depend>foxglove_bridge</exec_depend>
+  <exec_depend>python3-yaml</exec_depend>
+  <exec_depend>python3-numpy</exec_depend>
+
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

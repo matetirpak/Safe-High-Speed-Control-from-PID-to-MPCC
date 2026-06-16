@@ -1,0 +1,164 @@
+{
+  "configById": {
+    "3D!scene": {
+      "layers": {},
+      "cameraState": {
+        "perspective": true,
+        "distance": 70,
+        "phi": 48,
+        "thetaOffset": 90,
+        "targetOffset": [0, 0, 0],
+        "target": [0, 0, 0],
+        "targetOrientation": [0, 0, 0, 1],
+        "fovy": 45,
+        "near": 0.5,
+        "far": 5000
+      },
+      "followMode": "follow-position",
+      "followTf": "hero",
+      "scene": {
+        "backgroundColor": "#16181c",
+        "transforms": { "axisScale": 0, "lineWidth": 0, "showLabel": false }
+      },
+      "transforms": {
+        "gt_map": { "visible": false },
+        "hero": { "visible": true, "axisScale": 3.0, "showLabel": false },
+        "base_link": { "visible": false },
+        "cam_front": { "visible": false }
+      },
+      "topics": {
+        "/carla/hero/gt/path": {
+          "visible": true, "type": "line", "lineWidth": 0.6,
+          "gradient": ["#00e676ff", "#00e676ff"]
+        },
+        "/controller/predicted_path": {
+          "visible": true, "type": "line", "lineWidth": 0.8,
+          "gradient": ["#ff9100ff", "#ff9100ff"]
+        },
+        "/controller/goal_point": { "visible": true },
+        "/controller/heatmap_speed": { "visible": true },
+        "/controller/lane_invasion_marker": { "visible": true },
+        "/ego_model": { "visible": true }
+      },
+      "publish": {
+        "type": "point",
+        "poseTopic": "/move_base_simple/goal",
+        "pointTopic": "/clicked_point",
+        "poseEstimateTopic": "/initialpose",
+        "poseEstimateXDeviation": 0.5,
+        "poseEstimateYDeviation": 0.5,
+        "poseEstimateThetaDeviation": 0.26179939
+      },
+      "imageMode": {},
+      "foxglovePanelTitle": "Scene — driven (green), reference (speed-coloured), MPC prediction (orange)"
+    },
+    "Image!cam_front": {
+      "imageMode": {
+        "imageTopic": "/controller/camera_overlay/image"
+      },
+      "cameraState": {
+        "distance": 20, "perspective": true, "phi": 60,
+        "target": [0, 0, 0], "targetOffset": [0, 0, 0],
+        "targetOrientation": [0, 0, 0, 1], "thetaOffset": 60,
+        "fovy": 45, "near": 0.5, "far": 5000
+      },
+      "followMode": "follow-pose",
+      "scene": {}, "transforms": {}, "topics": {}, "layers": {},
+      "synchronize": false,
+      "foxglovePanelTitle": "Front camera + predicted path (orange) / reference (blue)"
+    },
+    "Indicator!lane": {
+      "path": "/controller/lane_invasion.data",
+      "style": "background",
+      "fallbackColor": "#2e3440",
+      "fallbackLabel": "lane OK",
+      "rules": [
+        { "operator": "=", "rawValue": "true", "color": "#ff1744", "label": "⚠ LINE CROSSED" },
+        { "operator": "=", "rawValue": "false", "color": "#2e3440", "label": "lane OK" }
+      ],
+      "foxglovePanelTitle": "Lane crossing (blinks)"
+    },
+    "Plot!speed": {
+      "paths": [
+        { "value": "/controller/speed_kmh.data", "enabled": true, "color": "#00e676", "label": "speed (km/h)" },
+        { "value": "/controller/target_speed_kmh.data", "enabled": true, "color": "#ffab00", "label": "target (km/h)" }
+      ],
+      "showLegend": true,
+      "xAxisVal": "timestamp",
+      "foxglovePanelTitle": "Speed — actual vs target (km/h)"
+    },
+    "Plot!cmd": {
+      "paths": [
+        { "value": "/controller/throttle.data", "enabled": true, "color": "#00e676", "label": "throttle" },
+        { "value": "/controller/brake.data", "enabled": true, "color": "#ff5252", "label": "brake" },
+        { "value": "/controller/steer.data", "enabled": true, "color": "#40c4ff", "label": "steer" }
+      ],
+      "showLegend": true,
+      "minYValue": -1.05,
+      "maxYValue": 1.05,
+      "xAxisVal": "timestamp",
+      "foxglovePanelTitle": "Control commands (throttle / brake / steer)"
+    },
+    "Plot!error": {
+      "paths": [
+        { "value": "/controller/cross_track_error.data", "enabled": true, "color": "#ff4081", "label": "cross-track (m)" },
+        { "value": "/controller/heading_error_deg.data", "enabled": true, "color": "#b388ff", "label": "heading (deg)" }
+      ],
+      "showLegend": true,
+      "xAxisVal": "timestamp",
+      "foxglovePanelTitle": "Tracking error — cross-track (m) + heading (deg)"
+    },
+    "Plot!solve": {
+      "paths": [
+        { "value": "/controller/solve_time_ms.data", "enabled": true, "color": "#00e5ff", "label": "MPC solve (ms)" }
+      ],
+      "showLegend": true,
+      "minYValue": 0,
+      "xAxisVal": "timestamp",
+      "foxglovePanelTitle": "MPC solve time (ms) — empty for PID"
+    },
+    "Tab!main": {
+      "activeTabIdx": 0,
+      "tabs": [
+        {
+          "title": "Control",
+          "layout": {
+            "direction": "column",
+            "first": {
+              "direction": "row",
+              "first": "3D!scene",
+              "second": {
+                "direction": "column",
+                "first": "Indicator!lane",
+                "second": {
+                  "direction": "column",
+                  "first": "Plot!speed",
+                  "second": "Plot!cmd",
+                  "splitPercentage": 50
+                },
+                "splitPercentage": 12
+              },
+              "splitPercentage": 60
+            },
+            "second": {
+              "direction": "row",
+              "first": "Image!cam_front",
+              "second": {
+                "direction": "row",
+                "first": "Plot!error",
+                "second": "Plot!solve",
+                "splitPercentage": 50
+              },
+              "splitPercentage": 30
+            },
+            "splitPercentage": 62
+          }
+        }
+      ]
+    }
+  },
+  "layout": "Tab!main",
+  "globalVariables": {},
+  "playbackConfig": { "speed": 1 },
+  "userNodes": {}
+}

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- roundabout: Town03 spawn-point indices (in order): 114,40,11,40,175
+     EDIT BY THESE NUMBERS (atlas spawn indices), not the raw coords below. GRP-traced.
+     Wire with:  route: routes/roundabout.xml  in config/scenarios.yaml -->
+<routes>
+    <route id="roundabout" town="Town03">
+        <weathers>
+            <weather route_percentage="0" cloudiness="10" sun_altitude_angle="60"/>
+        </weathers>
+        <waypoints>
+            <position x="4.672596" y="69.624977" z="0.300000"/>  <!-- spawn 114 -->
+            <position x="-9.441488" y="91.994293" z="0.300000"/>  <!-- spawn 40 -->
+            <position x="-74.387177" y="25.734657" z="0.350000"/>  <!-- spawn 11 -->
+            <position x="-9.441488" y="91.994293" z="0.300000"/>  <!-- spawn 40 -->
+            <position x="97.278854" y="63.117493" z="0.300000"/>  <!-- spawn 175 -->
+        </waypoints>
+        <scenarios/>
+    </route>
+</routes>
